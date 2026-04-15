@@ -42,7 +42,7 @@ jobs:
     continue-on-error: true  # Don't fail workflow if Copilot unavailable
     steps:
       - name: Request Copilot Review
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             try {
