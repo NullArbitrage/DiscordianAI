@@ -3,9 +3,7 @@
 [![codecov](https://codecov.io/github/johndotpub/DiscordianAI/graph/badge.svg?token=4WOMJ952A2)](https://codecov.io/github/johndotpub/DiscordianAI)
 [![Security: pip-audit](https://img.shields.io/badge/security-pip--audit-blueviolet)](https://pypi.org/project/pip-audit/)
 
-[![Tests: py312 required](https://img.shields.io/github/actions/workflow/status/johndotpub/DiscordianAI/ci.yml?branch=main&label=tests%20py312%20required&logo=githubactions)](https://github.com/johndotpub/DiscordianAI/actions/workflows/ci.yml)
-[![Python 3.12+ required](https://img.shields.io/badge/python-3.12%2B-required-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
-
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/badge/linter-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
