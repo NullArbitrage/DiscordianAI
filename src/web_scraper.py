@@ -62,34 +62,223 @@ class ContentExtractionError(WebScrapingError):
     """Exception raised when content extraction fails."""
 
 
-def _add_respectful_delay() -> None:
-    """Add a small random delay between requests to be respectful to servers."""
-    delay = random.uniform(MIN_DELAY_BETWEEN_REQUESTS, MAX_DELAY_BETWEEN_REQUESTS)
+def _add_respectful_delay():
+    """Add a respectful delay between requests to avoid overwhelming servers."""
+    # Using random for non-cryptographic purposes (rate limiting)
+    delay = random.uniform(MIN_DELAY_BETWEEN_REQUESTS, MAX_DELAY_BETWEEN_REQUESTS)  # noqa: S311
     time.sleep(delay)
 
 
-def _fetch_attempt(
-    url: str,
-    session: Any,
-    headers: dict[str, str],
-    _attempt: int,
-) -> tuple[str | None, str | None]:
-    """Attempt to fetch URL content with timeout and error handling.
+def _clean_text(text: str) -> str:
+    """Clean and normalize scraped text content.
 
     Args:
-        url: URL to fetch
-        session: Request session for connection pooling
-        headers: HTTP headers for the request
-        _attempt: Attempt number for retry tracking
+        text: Raw text content from web scraping
 
     Returns:
-        Tuple[str|None, str|None]: (content, error_message)
+        Cleaned and normalized text
     """
-    _add_respectful_delay()
+    if not text:
+        return ""
+
+    # First normalize multiple newlines to max 2
+    text = re.sub(r"\n\s*\n", "\n\n", text)
+    # Then convert remaining single newlines to spaces (but not double newlines)
+    text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
+    # Finally normalize spaces
+    text = re.sub(r"[ \t]+", " ", text)
+
+    # Remove common web artifacts and navigation text
+    artifacts = [
+        r"Skip to content|Skip to main content|Skip navigation",
+        r"Cookie|Privacy Policy|Terms of Service|Accept Cookies",
+        r"Subscribe|Newsletter|Sign up|Log in|Login|Register",
+        r"Share this|Follow us|Social media|Advertisement",
+        r"Back to top|Scroll to top|Go to top",
+    ]
+
+    for artifact_pattern in artifacts:
+        text = re.sub(artifact_pattern, "", text, flags=re.IGNORECASE)
+
+    # Clean up any remaining double spaces from artifact removal
+    text = re.sub(r"  +", " ", text)
+
+    return text.strip()
+
+
+def _remove_noise_elements(soup: BeautifulSoup) -> None:
+    """Remove noise elements that don't contain useful content."""
+    noise_selectors = [
+        "nav",
+        "footer",
+        "header",
+        "aside",
+        "script",
+        "style",
+        "noscript",
+        ".navigation",
+        ".nav",
+        ".menu",
+        ".sidebar",
+        ".footer",
+        ".header",
+        ".advertisement",
+        ".ad",
+        ".ads",
+        ".cookie-banner",
+        ".popup",
+        ".social-media",
+        ".share-buttons",
+        ".newsletter",
+        ".subscribe",
+    ]
+    for selector in noise_selectors:
+        for elem in soup.select(selector):
+            elem.decompose()
+
+
+def _extract_content(soup: BeautifulSoup) -> str:
+    """Extract content from any web page using production-ready generic selectors."""
+    content_parts = []
+
+    # Page title
+    title = soup.find("title")
+    if title and title.get_text(strip=True):
+        content_parts.append(f"Title: {title.get_text(strip=True)}")
+
+    # Meta description
+    meta_desc = soup.find("meta", attrs={"name": "description"})
+    if meta_desc and meta_desc.get("content"):
+        content_parts.append(f"Description: {meta_desc.get('content').strip()}")
+
+    _remove_noise_elements(soup)
+
+    content_selectors = [
+        "main",
+        "article",
+        ".main",
+        ".content",
+        "#content",
+        ".post",
+        ".article",
+        ".page-content",
+        ".entry-content",
+        ".entry",
+        "body",
+        '[role="main"]',
+        ".main-content",
+        ".post-content",
+        ".readme",
+        ".documentation",
+        ".container .content",
+        "#main-content",
+        ".article-content",
+        ".story-content",
+        ".post",
+        ".entry",
+        ".article",
+        ".story",
+        ".markdown-body",
+    ]
+
+    main_content = _try_selectors(soup, content_selectors)
+    if main_content:
+        text = main_content.get_text(strip=True, separator=" ")
+        if text and len(text) > MIN_TEXT_LENGTH:
+            content_parts.append(f"Main content: {text}")
+
+    # If no main content found, try extracting key sections
+    if not main_content or len(content_parts) < MIN_PARTS_FOR_KEY_SECTIONS:
+        _extract_key_sections(soup, content_parts)
+
+    # Final fallback: use body content
+    if not content_parts or sum(len(part) for part in content_parts) < MIN_TOTAL_LENGTH_FOR_BODY:
+        _extract_body_fallback(soup, content_parts)
+
+    return "\n\n".join(content_parts)
+
+
+def _try_selectors(soup: BeautifulSoup, selectors: list[str]) -> Any:
+    """Try various selectors to find main content."""
+    for selector in selectors:
+        element = soup.select_one(selector)
+        if element:
+            return element
+    return None
+
+
+def _extract_key_sections(soup: BeautifulSoup, content_parts: list[str]) -> None:
+    """Extract headings and paragraphs as fallback."""
+    headings = [
+        h.get_text(strip=True)
+        for h in soup.find_all(["h1", "h2", "h3"])
+        if h.get_text(strip=True) and len(h.get_text(strip=True)) < MAX_HEADING_LENGTH
+    ]
+    if headings:
+        content_parts.append(f"Key sections: {' | '.join(headings[:10])}")
+
+    if len(content_parts) < MIN_PARTS_FOR_KEY_SECTIONS:
+        paragraphs = [
+            p.get_text(strip=True)
+            for p in soup.find_all("p")
+            if p.get_text(strip=True) and len(p.get_text(strip=True)) > MIN_PARA_LENGTH
+        ]
+        if paragraphs:
+            content_parts.append(f"Key content: {' '.join(paragraphs[:5])}")
+
+
+def _extract_body_fallback(soup: BeautifulSoup, content_parts: list[str]) -> None:
+    """Extract limited body content as last resort."""
+    body = soup.find("body")
+    if body:
+        text = body.get_text(strip=True, separator=" ")
+        if text:
+            if len(text) > TRUNCATION_LIMIT:
+                text = text[:TRUNCATION_LIMIT] + "... [content truncated]"
+            content_parts.append(f"Page content: {text}")
+
+
+async def scrape_url_content(
+    url: str,
+    logger: logging.Logger | None = None,
+    request_timeout: int = DEFAULT_TIMEOUT,
+    max_content_length: int = MAX_CONTENT_LENGTH,
+) -> str | None:
+    """Scrape content from a URL using production-ready requests + BeautifulSoup.
+
+    This function implements production best practices including:
+    - Proper error handling and retries
+    - Realistic browser headers to avoid blocking
+    - Content size limits for token management
+    - Comprehensive logging for debugging
+    - Generic content extraction for any website
+
+    Args:
+        url: URL to scrape content from
+        logger: Optional logger instance for detailed logging
+        request_timeout: Request timeout in seconds
+        max_content_length: Maximum content length to return
+
+    Returns:
+        Extracted content as string, or None if scraping failed
+    """
+    if not logger:
+        logger = logging.getLogger(__name__)
+
+    logger.info("Starting web scraping for URL: %s", url)
+
     try:
-        response = session.get(
-            url, headers=headers, timeout=DEFAULT_TIMEOUT, stream=True
-        )
+        if not _validate_url(url, logger):
+            return None
+
+        _add_respectful_delay()
+
+        # Execute request asynchronously, enforcing an overall asyncio timeout
+        try:
+            async with asyncio.timeout(request_timeout):
+                html_content = await asyncio.to_thread(
+                    _fetch_content_with_retries, url, request_timeout, logger
+                )
         except TimeoutError:
             logger.warning("Scrape timed out for URL: %s", url)
             return None
