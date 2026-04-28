@@ -9,6 +9,8 @@ import logging
 import re
 from typing import Any
 
+import requests
+
 from .config import (
     BARE_URL_PATTERN,
     CITATION_PATTERN,

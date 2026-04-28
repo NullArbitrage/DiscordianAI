@@ -437,7 +437,7 @@ def sanitize_for_discord(text: str) -> str:
 
     # Ensure text isn't too long
     if len(text) > MESSAGE_LIMIT:
-        text = text[:MESSAGE_LIMIT - 3] + "..."
+        text = text[: MESSAGE_LIMIT - 3] + "..."
 
     return text
 

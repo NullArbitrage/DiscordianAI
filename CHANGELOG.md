@@ -6,14 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.2.9.6] - 2026-04-28
 
 ### Fixed 🔧
 - Synced `discord.py` minimum version across `requirements.txt` and `pyproject.toml` (>=2.7.1).
+- Fixed critical `OPENAI_API_KEY` environment variable leak into `test_config.py` via autouse monkeypatch fixture.
+- Fixed `CircuitBreaker` race condition under concurrent async load by adding state-transition lock.
+- Fixed duplicate conversation history when OpenAI falls back to Perplexity after web-incapable responses.
+- Fixed bare `except Exception` in `perplexity_processing.py` to specific exception types.
+- Fixed missing `timeout=30` in `check_perplexity_health()` to match OpenAI health check parity.
+- Fixed stale Python version references across all documentation (3.10 → 3.12).
+- Fixed unterminated Mermaid diagram in `docs/HybridMode.md`.
+- Fixed duplicate `MAX_HISTORY_PER_USER` key in `docs/HybridMode.md` config example.
+- Fixed stale CI comment claiming Python 3.10 support.
+- Fixed `PLR0911` mention in docs that was not reflected in `pyproject.toml`.
 
 ### Changed 🔁
-- Updated `.pre-commit-config.yaml` to latest `black` and `ruff` versions.
 - Unified coverage fail-under gate to **84%** in `pyproject.toml`.
+- Centralized constants in `main.py` to import from `config.py`.
+- Centralized link counting in `message_splitter.py` to use `LINK_PATTERN`.
+- Pre-compiled regex patterns where possible.
+- Standardized error messages in `message_processor.py` to import from `config.py`.
+- Replaced per-call `secrets.SystemRandom()` with module-level instance in `error_handling.py`.
+- Deduplicated `send_split_message` smoke tests between `test_bot.py` and `test_message_splitting.py`.
+- Removed dead code across `perplexity_processing.py` and test files.
+- Updated `.pre-commit-config.yaml` to latest `black` and `ruff` versions.
+- Removed non-existent `.secrets.baseline` reference from detect-secrets hook.
+
+### Security 🛡️
+- Hardened `Dockerfile` with non-root `appuser`.
+- Moved `config.ini` exclusion to `.dockerignore`.
+- Prevented API key exposure in test output via environment isolation fixture.
+
+### Tests ✅
+- Added autouse env-isolation fixture to `test_config.py`.
+- Converted `asyncio.run()` anti-patterns to native `pytest.mark.asyncio` tests.
+- Replaced manual `sys.argv` mutation in `test_main.py` with `monkeypatch`.
+- Added shared mock fixtures to `tests/conftest.py`.
+- Removed dead constants, commented pseudocode, and redundant test coverage.
+
+### Documentation 📝
+- Updated README Discord.py badge to 2.7.1.
+- Updated coverage target references from 80% to 84% in `docs/Architecture.md`.
+- Corrected test file reference in `docs/Architecture.md`.
+- Removed stale `PLR0911` and flake8/isort references.
+- Rewrote `docs/Python_Versions.md` to reflect Python 3.12+ exclusivity.
+- Aligned `docs/Security.md`, `docs/Setup.md`, `docs/API_Validation.md`, and `CONTRIBUTING.md` to current Python and package versions.
 
 ## [0.2.9.5] - 2026-02-28
 

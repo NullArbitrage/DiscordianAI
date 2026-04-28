@@ -1,9 +1,9 @@
 """Pytest configuration helpers and shared fixtures for DiscordianAI tests."""
 
 from unittest.mock import AsyncMock, MagicMock
+import warnings
 
 import pytest
-import warnings
 
 # Discord.py still imports the stdlib audioop module, which raises a global
 # DeprecationWarning on Python 3.12+ when tests enable ``-W error``. Keep the
