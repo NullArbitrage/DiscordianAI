@@ -7,7 +7,7 @@
 [![Python 3.12+ required](https://img.shields.io/badge/python-3.12%2B-required-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Ruff](https://img.shields.io/badge/linter-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
 
 [![Discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2.svg?logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
