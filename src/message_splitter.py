@@ -16,6 +16,7 @@ from .config import (
     BARE_URL_PATTERN,
     EMBED_LIMIT,
     EMBED_SAFE_LIMIT,
+    LINK_PATTERN,
     MAX_SPLIT_RECURSION,
     MENTION_PATTERN,
     MESSAGE_BUFFER,
@@ -412,7 +413,7 @@ def format_user_context(user: Any, is_dm: bool) -> str:
 def count_links(text: str) -> int:
     """Count the number of links in text for embed suppression decisions."""
     # Count Discord hyperlinks [title](url)
-    discord_links = len(re.findall(r"\[([^\]]+)\]\(([^)]+)\)", text))
+    discord_links = len(LINK_PATTERN.findall(text))
 
     # Count bare URLs
     bare_urls = len(BARE_URL_PATTERN.findall(text))
@@ -436,7 +437,7 @@ def sanitize_for_discord(text: str) -> str:
 
     # Ensure text isn't too long
     if len(text) > MESSAGE_LIMIT:
-        text = text[:1997] + "..."
+        text = text[:MESSAGE_LIMIT - 3] + "..."
 
     return text
 
