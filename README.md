@@ -10,7 +10,7 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
 
-[![Discord.py](https://img.shields.io/badge/discord.py-2.6.4-5865F2.svg?logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
+[![Discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2.svg?logo=discord&logoColor=white)](https://discordpy.readthedocs.io/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5-412991.svg?logo=openai&logoColor=white)](https://openai.com/)
 [![Perplexity](https://img.shields.io/badge/Perplexity-Sonar--Pro-20B2AA.svg)](https://www.perplexity.ai/)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
