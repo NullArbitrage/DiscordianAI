@@ -24,23 +24,6 @@ CITATION_SPLIT_PARTS = 2
 LINK_THRESHOLD = 2
 
 
-def _extract_per_citation(cit: Any, idx: int) -> tuple[str, str] | None:
-    """Extract single citation details from various possible formats."""
-    if isinstance(cit, str):
-        if not cit.strip():
-            return None
-        parts = cit.split(" - ", 1)
-        if len(parts) == CITATION_SPLIT_PARTS:
-            return parts[0].strip(), parts[1].strip()
-        return f"Source {idx}", cit.strip()
-    if isinstance(cit, dict):
-        url = cit.get("url") or cit.get("link")
-        title = cit.get("title") or cit.get("name") or f"Source {idx}"
-        if url:
-            return title, url
-    return None
-
-
 def extract_citations_from_response(
     response_text: str,
     response_citations: list[Any] | None = None,
@@ -349,7 +332,7 @@ async def _enhance_message_with_urls(message: str, urls: list[str], logger: logg
                 if content:
                     scraped_contents.append(f"Content from {url}:\n{content}")
                     successful_scrapes.append(url)
-            except Exception:
+            except (TimeoutError, requests.RequestException):
                 logger.exception("Web scraping failed for %s", url)
 
     if scraped_contents:
