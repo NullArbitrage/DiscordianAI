@@ -22,12 +22,15 @@ from typing import NoReturn
 
 from .api_validation import log_validation_results
 from .bot import run_bot
-from .config import load_config, parse_arguments
+from .config import (
+    DEFAULT_RATE_LIMIT,
+    DEFAULT_RATE_LIMIT_PER,
+    MAX_OUTPUT_TOKENS_THRESHOLD,
+    load_config,
+    parse_arguments,
+)
 
 # Constants for validation
-MAX_OUTPUT_TOKENS_THRESHOLD = 50000
-DEFAULT_RATE_LIMIT_VAL = 10
-DEFAULT_RATE_LIMIT_PER_VAL = 60
 DEFAULT_OUTPUT_TOKENS_VAL = 8000
 
 
@@ -140,8 +143,8 @@ def validate_critical_config(config: dict, logger: logging.Logger) -> None:
 
     # Validate rate limiting settings
     try:
-        rate_limit = int(config.get("RATE_LIMIT", DEFAULT_RATE_LIMIT_VAL))
-        rate_limit_per = int(config.get("RATE_LIMIT_PER", DEFAULT_RATE_LIMIT_PER_VAL))
+        rate_limit = int(config.get("RATE_LIMIT", DEFAULT_RATE_LIMIT))
+        rate_limit_per = int(config.get("RATE_LIMIT_PER", DEFAULT_RATE_LIMIT_PER))
         if rate_limit <= 0 or rate_limit_per <= 0:
             errors.append("RATE_LIMIT and RATE_LIMIT_PER must be positive")
     except (ValueError, TypeError):

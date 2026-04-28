@@ -114,7 +114,7 @@ select = [
 
 # AI-friendly rules - allows multiple return statements for readable routing logic
 ignore = [
-    "PLR0911", # Too many return statements (common in AI routing logic)
+    "S101",   # Use of assert detected (OK in tests)
 ]
 
 [tool.ruff.lint.isort]

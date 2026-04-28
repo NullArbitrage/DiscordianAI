@@ -76,34 +76,38 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = 0
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+        self._lock = asyncio.Lock()
 
     def __call__(self, func):
         """Decorator to wrap a function with circuit breaker logic."""
 
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
-            if self.state == "OPEN":
-                if time.time() - self.last_failure_time > self.timeout:
-                    self.state = "HALF_OPEN"
-                else:
-                    open_msg = f"Circuit breaker OPEN for {func.__name__}"
-                    raise RuntimeError(open_msg)
+            async with self._lock:
+                if self.state == "OPEN":
+                    if time.time() - self.last_failure_time > self.timeout:
+                        self.state = "HALF_OPEN"
+                    else:
+                        open_msg = f"Circuit breaker OPEN for {func.__name__}"
+                        raise RuntimeError(open_msg)
 
             try:
                 result = await func(*args, **kwargs)
             except self.expected_exception:
-                self.failure_count += 1
-                self.last_failure_time = time.time()
+                async with self._lock:
+                    self.failure_count += 1
+                    self.last_failure_time = time.time()
 
-                # If in HALF_OPEN state, any failure should open the circuit
-                if self.state == "HALF_OPEN" or self.failure_count >= self.failure_threshold:
-                    self.state = "OPEN"
+                    # If in HALF_OPEN state, any failure should open the circuit
+                    if self.state == "HALF_OPEN" or self.failure_count >= self.failure_threshold:
+                        self.state = "OPEN"
 
                 raise
             else:
-                if self.state == "HALF_OPEN":
-                    self.state = "CLOSED"
-                    self.failure_count = 0
+                async with self._lock:
+                    if self.state == "HALF_OPEN":
+                        self.state = "CLOSED"
+                        self.failure_count = 0
                 # In CLOSED state, don't reset failure_count on success
                 # (only reset in HALF_OPEN to CLOSED transition)
                 return result

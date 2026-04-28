@@ -77,8 +77,7 @@ pre-commit install
 ### Configured Hooks
 
 1. **detect-secrets**: Scans for potential secrets in commits
-   - Maintains a `.secrets.baseline` for known safe strings
-   - Blocks commits containing potential API keys, passwords, etc.
+    - Blocks commits containing potential API keys, passwords, etc.
 
 2. **black**: Ensures consistent code formatting
 
@@ -182,7 +181,7 @@ USER botuser
 
 # Read-only filesystem where possible
 # No unnecessary packages
-FROM python:3.10-slim-bookworm
+FROM python:3.12-slim-bookworm
 ```
 
 ### Docker Compose Security

@@ -4,7 +4,7 @@ Complete setup guide for DiscordianAI with advanced AI orchestration and convers
 
 ## Prerequisites
 
-- **Python 3.10 or higher** installed
+- **Python 3.12 or newer** installed
 - **Discord bot token** from Discord Developer Portal
 - **At least one AI service API key** (OpenAI and/or Perplexity)
 

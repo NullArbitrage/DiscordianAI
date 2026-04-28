@@ -7,7 +7,7 @@ This document validates the API parameters used in DiscordianAI against current 
 
 ### Parameters Used
 - **API URL**: `https://api.openai.com/v1/` ✅ **VALID**
-- **Parameter**: `max_tokens` ✅ **VALID** (Correct parameter name)
+- **Parameter**: `max_completion_tokens` ✅ **VALID** (GPT-5 uses this)
 - **Supported Models**: 
   - `gpt-5-mini` ✅ **VALID** (Default - cost-effective)
   - `gpt-5` ✅ **VALID** (Standard - complex tasks)
@@ -31,7 +31,7 @@ This document validates the API parameters used in DiscordianAI against current 
 ## Discord.py API Validation
 
 ### Parameters Used
-- **Version**: `2.5.2` (from requirements.txt) ⚠️ **CHECK FOR UPDATES**
+- **Version**: `>=2.7.1` (from requirements.txt) ✅ **CURRENT**
 - **Intents**: `default()` with typing/presences disabled ✅ **OPTIMAL**
 - **Activity Types**: `['playing', 'streaming', 'listening', 'watching', 'custom', 'competing']` ✅ **VALID**
 

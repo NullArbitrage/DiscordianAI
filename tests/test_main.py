@@ -8,17 +8,16 @@ def test_main_importable():
     importlib.import_module("src.main")  # Should not raise
 
 
-def test_main_runs():
+def test_main_runs(monkeypatch):
     import sys
+
+    monkeypatch.setattr(sys, "argv", ["prog"])
 
     with (
         patch("src.main.run_bot") as mock_run_bot,
         patch("src.main.load_config") as mock_load_config,
         patch("src.main.parse_arguments") as mock_parse_arguments,
     ):
-        # Patch sys.argv to avoid pytest args
-        sys_argv_backup = sys.argv
-        sys.argv = ["prog"]
         mock_parse_arguments.return_value = type("Args", (), {"conf": None, "folder": None})()
         # Provide required configuration values
         mock_load_config.return_value = {
@@ -31,7 +30,6 @@ def test_main_runs():
 
         main.main()
         mock_run_bot.assert_called_once()
-        sys.argv = sys_argv_backup
 
 
 def test_main_handles_exception(monkeypatch):
@@ -39,9 +37,7 @@ def test_main_handles_exception(monkeypatch):
 
     from src import main
 
-    # Patch sys.argv to avoid pytest args
-    sys_argv_backup = sys.argv
-    sys.argv = ["prog"]
+    monkeypatch.setattr(sys, "argv", ["prog"])
 
     def _raise_fail(_config):
         msg = "fail"
@@ -61,4 +57,3 @@ def test_main_handles_exception(monkeypatch):
     )
     with pytest.raises(SystemExit, match="1"):
         main.main()
-    sys.argv = sys_argv_backup

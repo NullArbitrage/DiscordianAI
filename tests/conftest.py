@@ -1,6 +1,9 @@
-"""Pytest configuration helpers for DiscordianAI tests."""
+"""Pytest configuration helpers and shared fixtures for DiscordianAI tests."""
 
+from unittest.mock import AsyncMock, MagicMock
 import warnings
+
+import pytest
 
 # Discord.py still imports the stdlib audioop module, which raises a global
 # DeprecationWarning on Python 3.12+ when tests enable ``-W error``. Keep the
@@ -12,3 +15,43 @@ warnings.filterwarnings(
     category=DeprecationWarning,
     module=r"discord\.player",
 )
+
+
+@pytest.fixture
+def mock_logger():
+    """Return a MagicMock logger suitable for injection into deps."""
+    return MagicMock()
+
+
+@pytest.fixture
+def mock_channel():
+    """Return an AsyncMock Discord text channel with a mocked send method."""
+    ch = AsyncMock()
+    ch.send = AsyncMock()
+    ch.id = 123456789
+    ch.name = "general"
+    return ch
+
+
+@pytest.fixture
+def mock_message():
+    """Return an AsyncMock Discord message with a mocked reply method."""
+    msg = AsyncMock()
+    msg.reply = AsyncMock()
+    msg.author.id = 987654321
+    msg.author.name = "test_user"
+    msg.author.mention = "<@987654321>"
+    msg.content = "Hello, bot!"
+    msg.channel.id = 123456789
+    msg.channel.name = "general"
+    return msg
+
+
+@pytest.fixture
+def mock_conversation_manager():
+    """Return a MagicMock conversation manager with mocked add/get methods."""
+    cm = MagicMock()
+    cm.add_message = MagicMock()
+    cm.get_conversation = MagicMock(return_value=[])
+    cm.get_conversation_summary = MagicMock(return_value=[])
+    return cm

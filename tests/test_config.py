@@ -3,7 +3,40 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.config import get_error_messages, load_config, parse_arguments
+
+
+@pytest.fixture(autouse=True)
+def isolate_config_env(monkeypatch):
+    """Scrub env vars that load_config reads so the host env never leaks into tests."""
+    keys = [
+        "DISCORD_TOKEN",
+        "ALLOWED_CHANNELS",
+        "BOT_PRESENCE",
+        "ACTIVITY_TYPE",
+        "ACTIVITY_STATUS",
+        "OPENAI_API_KEY",
+        "OPENAI_API_URL",
+        "PERPLEXITY_API_KEY",
+        "PERPLEXITY_API_URL",
+        "PERPLEXITY_MODEL",
+        "GPT_MODEL",
+        "INPUT_TOKENS",
+        "OUTPUT_TOKENS",
+        "CONTEXT_WINDOW",
+        "SYSTEM_MESSAGE",
+        "RATE_LIMIT",
+        "RATE_LIMIT_PER",
+        "LOOKBACK_MESSAGES_FOR_CONSISTENCY",
+        "MAX_HISTORY_PER_USER",
+        "USER_LOCK_CLEANUP_INTERVAL",
+        "LOG_FILE",
+        "LOG_LEVEL",
+    ]
+    for k in keys:
+        monkeypatch.delenv(k, raising=False)
 
 
 class TestParseArguments:

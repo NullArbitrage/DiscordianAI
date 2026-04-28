@@ -1,21 +1,22 @@
 # Python Version Compatibility
 
-DiscordianAI is designed to work with Python 3.10 only, providing a simple and straightforward development experience.
+DiscordianAI targets **Python 3.12 and newer**.
 
 ## Supported Python Versions
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| **Python 3.10** | ✅ **Fully Supported** | Only supported version |
+| **Python 3.12** | ✅ **Required** | Minimum supported version |
+| **Python 3.13+** | ✅ **Compatible** | Should work; CI may add informational tests |
 
 ## Version Requirements
 
-- **Required**: Python 3.10.x
-- **No other versions supported**
+- **Required**: Python >= 3.12
+- **Not supported**: Python 3.10, 3.11
 
 ## Modern Python Features Used
 
-DiscordianAI leverages modern Python features that are available in Python 3.10:
+DiscordianAI leverages modern Python features available in Python 3.12:
 
 ### Type Annotations (Python 3.9+)
 ```python
@@ -24,7 +25,7 @@ def process_messages(messages: list[dict[str, str]]) -> dict[str, Any]:
     pass
 
 # Built-in collection types
-from typing import Dict, List  # No longer needed!
+# from typing import Dict, List  # No longer needed!
 ```
 
 ### Union Types (Python 3.10+)
@@ -32,20 +33,12 @@ from typing import Dict, List  # No longer needed!
 # Modern union syntax
 def get_user_data(user_id: int | None) -> dict[str, Any] | None:
     pass
-
-# Instead of typing.Union[int, None]
 ```
 
-### Pattern Matching (Python 3.10+)
+### F-String Debugging (Python 3.12)
 ```python
-# Available but not currently used in codebase
-match status:
-    case "healthy":
-        return "Service is running"
-    case "degraded":
-        return "Service has issues"
-    case _:
-        return "Unknown status"
+# Cleaner debug f-strings
+print(f"{user_id=}")
 ```
 
 ### Dataclasses (Python 3.7+)
@@ -61,74 +54,66 @@ class HealthCheckResult:
 
 ## Testing
 
-We use `tox` to ensure compatibility with Python 3.10:
+We use `tox` to run the canonical CI/test suite:
 
 ```bash
-# Test Python 3.10
-tox -e py310
-
-# Run linting
-tox -e lint
-
-# Run formatting
-tox -e format
+# Primary suite (required)
+tox -e py312
 ```
 
 ## CI/CD Testing
 
 Our GitHub Actions workflow automatically tests:
-- **Python version** (3.10 only)
+- **Python version** (3.12 required)
 - **Linting and formatting** with black + ruff
 - **Unit tests** with pytest
 - **Full tox suite** for comprehensive validation
 
 ## Dependency Compatibility
 
-All project dependencies are verified to work with Python 3.10:
+All project dependencies are verified to work with Python 3.12:
 
 - **discord.py**: ✅ Python 3.8+
 - **openai**: ✅ Python 3.7+
 - **websockets**: ✅ Python 3.7+
-- **pytest**: ✅ Python 3.7+
-- **ruff**: ✅ Python 3.8+
+- **pytest**: ✅ Python 3.8+
+- **ruff**: ✅ Python 3.7+
 - **black**: ✅ Python 3.7+
 
 ## Migration Guide
 
-### From Python 3.9 or Earlier
+### From Python 3.10 or 3.11
 
-If you're upgrading from Python 3.9 or earlier, you may need to:
+If you're upgrading from an older Python version:
 
-1. **Update type annotations**:
-   ```python
-   # Old (Python 3.8-3.9)
-   from typing import List, Dict, Union
-   def func(data: List[Dict[str, Union[str, int]]]) -> None:
-       pass
-   
-   # New (Python 3.10+)
-   def func(data: list[dict[str, str | int]]) -> None:
-       pass
-   ```
-
-2. **Remove typing imports**:
-   ```python
-   # No longer needed
-   from typing import Optional, Union, List, Dict
-   ```
-
-3. **Update pip and setuptools**:
+1. **Install Python 3.12**:
    ```bash
-   pip install --upgrade pip setuptools wheel
+   # Ubuntu/Debian
+   sudo apt update && sudo apt install python3.12 python3.12-venv python3.12-dev
+
+   # macOS (via Homebrew)
+   brew install python@3.12
    ```
 
-### From Python 3.10+
+2. **Create a new virtual environment**:
+   ```bash
+   python3.12 -m venv venv
+   source venv/bin/activate
+   ```
 
-No changes required! Your code will work as-is.
+3. **Reinstall dependencies**:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+4. **Run the test suite** to confirm compatibility:
+   ```bash
+   tox -e py312
+   ```
 
 ## Performance Considerations
 
-- **Python 3.10**: Stable, well-tested, recommended for production
+- **Python 3.12**: Improved f-string performance, better error messages, and async optimizations
 
 ## Troubleshooting
 
@@ -140,10 +125,10 @@ No changes required! Your code will work as-is.
 
 2. **SyntaxError: invalid syntax**
    - Check Python version: `python --version`
-   - Ensure you're using Python 3.10.x
+   - Ensure you're using Python 3.12+
 
 3. **tox environment creation fails**
-   - Install Python 3.10.x interpreter
+   - Install Python 3.12.x interpreter
    - Use `tox --skip-missing-interpreters` if needed
 
 ### Getting Help
@@ -156,6 +141,6 @@ No changes required! Your code will work as-is.
 ## Future Compatibility
 
 We're committed to:
-- **Maintaining Python 3.10 support** for the foreseeable future
+- **Staying current with Python releases** as stable versions become available
 - **Simple and straightforward** version management
-- **Stable development environment** with minimal compatibility concerns
+- **Stable development environment** with modern Python features
