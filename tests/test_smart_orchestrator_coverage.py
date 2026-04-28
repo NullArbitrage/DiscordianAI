@@ -266,9 +266,9 @@ class TestRoutingFunctions:
         found = any("should_use_web_search" in rec.message for rec in caplog.records)
         assert found, "Expected debug log from should_use_web_search"
 
-    def test_openai_web_inability_reroute_logs(self, caplog):
+    @pytest.mark.asyncio
+    async def test_openai_web_inability_reroute_logs(self, caplog):
         """Hybrid mode logs reroute when OpenAI indicates web-inability."""
-        import asyncio
         import logging
         from unittest.mock import MagicMock, patch
 
@@ -294,15 +294,15 @@ class TestRoutingFunctions:
             patch("src.smart_orchestrator.process_openai_message", fake_openai),
             patch("src.smart_orchestrator.process_perplexity_message", fake_perp),
         ):
-            asyncio.run(_process_hybrid_mode(request, [], clients, cfg, orchestrator_config=None))
+            await _process_hybrid_mode(request, [], clients, cfg, orchestrator_config=None)
 
         # Should have a reroute warning/info
         msgs = [r.getMessage() for r in caplog.records]
         assert any("rerouting to Perplexity" in m or "Routing to Perplexity" in m for m in msgs)
 
-    def test_perplexity_fallback_logs(self, caplog):
+    @pytest.mark.asyncio
+    async def test_perplexity_fallback_logs(self, caplog):
         """If Perplexity fails initially, hybrid mode logs fallback to OpenAI."""
-        import asyncio
         import logging
         from unittest.mock import MagicMock, patch
 
@@ -328,7 +328,7 @@ class TestRoutingFunctions:
             patch("src.smart_orchestrator.process_perplexity_message", failing_perp),
             patch("src.smart_orchestrator.process_openai_message", success_openai),
         ):
-            asyncio.run(_process_hybrid_mode(request, [], clients, cfg, orchestrator_config=None))
+            await _process_hybrid_mode(request, [], clients, cfg, orchestrator_config=None)
 
         msgs = [r.getMessage() for r in caplog.records]
         assert any("falling back to OpenAI" in m for m in msgs), "Expected Perplexity fallback log"
