@@ -1,0 +1,61 @@
+# DiscordianAI — systemd user service template
+#
+# This is a template unit file for running DiscordianAI as a systemd
+# user service with automatic restart on failure.
+#
+# SETUP:
+#   1. Copy this file to ~/.config/systemd/user/ (create the directory if needed):
+#        mkdir -p ~/.config/systemd/user
+#        cp discordian-bot@.service ~/.config/systemd/user/
+#
+#   2. Edit the copy: replace %i placeholders or set Environment variables
+#      to match your setup. At minimum, set the path to your DiscordianAI
+#      installation and config file.
+#
+#   3. Reload systemd and enable the service:
+#        systemctl --user daemon-reload
+#        systemctl --user enable --now discordian-bot@bot
+#
+#   4. Check status:
+#        systemctl --user status discordian-bot@bot
+#
+#   5. View logs:
+#        journalctl --user -u discordian-bot@bot -f
+#
+# The instance name (%i) becomes the config file name. For example,
+# discordian-bot@bot uses bot.ini, discordian-bot@prod uses prod.ini.
+#
+# The launcher script (discordian.sh) handles Python resolution, venv
+# bootstrapping, and dependency checking automatically. It runs in
+# foreground mode when invoked by systemd, which handles daemonization.
+
+[Unit]
+Description=DiscordianAI Bot (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust the path to match your installation directory
+ExecStart=/path/to/DiscordianAI/discordian.sh -c %i.ini -f /path/to/DiscordianAI
+WorkingDirectory=/path/to/DiscordianAI
+Restart=on-failure
+RestartSec=15
+
+# Logging — append to the bot log file in the project directory
+StandardOutput=append:/path/to/DiscordianAI/bot.log
+StandardError=append:/path/to/DiscordianAI/bot.log
+
+# Environment — adjust PATH so the launcher can find pyenv/python
+Environment=PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=HOME=%h
+Environment=LANG=en_US.UTF-8
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/path/to/DiscordianAI
+
+[Install]
+WantedBy=default.target

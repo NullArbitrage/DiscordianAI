@@ -58,6 +58,25 @@ python -m src.main --conf config.ini --folder /path/to/base/folder
 - `--conf` points at the config file.
 - `--folder` (optional) makes config/log paths relative to a base directory (useful for Docker or systemd units).
 
+### Running with the launcher script
+
+The included `discordian.sh` script handles Python environment resolution, venv bootstrapping, and process management automatically:
+
+```bash
+# Foreground (development, systemd)
+./discordian.sh -c config.ini
+
+# Daemon mode (cron, background)
+./discordian.sh -d -c config.ini
+
+# Specify project directory explicitly
+./discordian.sh -d -c production.ini -f /opt/discordianai
+```
+
+The launcher resolves Python in this order: pyenv → project-local `.venv` → shell venv → system `python3`. It creates a `.venv/` automatically if none exists. It also ensures the working directory is correct — no more `ModuleNotFoundError: No module named 'src'` when running from cron.
+
+For long-running deployments, a systemd template unit is included in `contrib/systemd/` with auto-restart on crash. See [docs/Daemon.md](docs/Daemon.md) for both cron and systemd setup.
+
 ## Configuration Essentials
 
 | Key | Purpose |

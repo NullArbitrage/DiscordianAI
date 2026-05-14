@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed 🔧
+- **discordian.sh launcher rewrite**: Fixed `ModuleNotFoundError: No module named 'src'` when running from cron — the script now always `cd`s into the project directory before launching Python.
+- **Python resolution**: Removed hardcoded linuxbrew PATH. The launcher now resolves Python in a portable priority order: pyenv → project venv → shell venv → system `python3`.
+- **Venv bootstrapping**: Automatically creates a project-local `.venv/` with dependencies if one doesn't exist, using the resolved Python interpreter.
+- **Process management**: Replaced bare `pkill` with PID-file based shutdown (SIGTERM → 10s wait → SIGKILL) and stray process cleanup.
+- **Startup health check**: Daemon mode now waits 3 seconds after launch and confirms the process survived before reporting success.
+- **Version gating**: Added Python ≥3.12 check with a clear error message on older interpreters.
+
+### Added ✨
+- **systemd template unit** (`contrib/systemd/discordian-bot@.service`): Template unit for auto-restart deployments. Instance name maps to config file (`discordian-bot@bot` → `bot.ini`).
+- **docs/Daemon.md**: Rewritten with both cron and systemd deployment paths, Python resolution order documentation, venv bootstrapping guide, and troubleshooting section.
+- **README.md**: Added "Running with the launcher script" section with usage examples and deployment links.
+- **`.bot.pid` gitignore**: Added PID file to `.gitignore`.
+
+---
+
+### Fixed 🔧
 - Classify OpenAI `insufficient_quota` (429) as non-retryable auth error for instant Perplexity fallback instead of wasteful retry loops.
 - Added `API_TIMEOUT` to non-retryable error list so read timeouts bail immediately to the fallback service rather than compounding retry delays.
 - Symmetrized retry policy across OpenAI and Perplexity: both services now use identical `retry_with_backoff` config (`max_attempts=2`, 2-4s jittered wait, flat delay).
